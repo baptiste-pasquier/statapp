@@ -1,0 +1,10 @@
+geckodriver.log
+__pycache__
+.ipynb_checkpoints
+
+# ms IDE stuff
+*.code-workspace
+.history
+.vscode
+
+data/
