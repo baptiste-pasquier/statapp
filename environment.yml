@@ -1,0 +1,15 @@
+name: statapp
+channels:
+  - default
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - pandas
+  - pip
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - ipykernel
+  - jupyterlab
+  - flake8
