@@ -4,7 +4,7 @@
 
 - `display_env`
 - `target_env`
-- `user_country`
+- `user_country` : bcp de modalités, pas forcément pertinent
 - `campaignscenario`
 - `campaignvertical`
 - `is_interstitial`
@@ -33,7 +33,7 @@ Liste finale Python :
 
 - ~~`ltf_lastpartnerclicktimestamp`~~ : très fortement correlé à `nbdaysincelastclick` (corr > 0.8)
 
-- ~~`ltf_nbglobalclick_4w`~~ : corrélé à `ltf_nbglobaldisplay_4w` est valeurs plus faibles.
+- ~~`ltf_nbglobalclick_4w`~~ : corrélé à `ltf_nbglobaldisplay_4w` et valeurs plus faibles.
 
 - `ltf_nbglobaldisplay_4w`
 
