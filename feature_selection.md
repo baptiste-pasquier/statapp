@@ -2,7 +2,6 @@
 
 ## Categorical variables :
 
-- `contextid`
 - `display_env`
 - `target_env`
 - `user_country`
@@ -13,8 +12,7 @@
 
 Liste finale Python : 
 ```
-['contextid',
- 'display_env',
+['display_env',
  'target_env',
  'user_country', 
  'campaignscenario',
@@ -94,7 +92,3 @@ Liste finale Python :
  'display_size',
  'zonecostineuro']
 ```
-
-
-
-]
