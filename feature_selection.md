@@ -4,7 +4,7 @@
 
 - `display_env`
 - `target_env`
-- `user_country` : bcp de modalités, pas forcément pertinent
+- ~~`user_country`~~ : bcp de modalités, pas forcément pertinent
 - `campaignscenario`
 - `campaignvertical`
 - `is_interstitial`
@@ -14,7 +14,6 @@ Liste finale Python :
 ```
 ['display_env',
  'target_env',
- 'user_country', 
  'campaignscenario',
  'campaignvertical',
  'is_interstitial',
@@ -63,7 +62,7 @@ Liste finale Python :
 
 - `nbdisplayglobalapprox_1d_sum_xdevice`
 
-- `valueperclick`,
+- ~~`valueperclick`~~ : corrélé à `campaignctrlast24h`
 
 - ~~`display_width`~~ et ~~`display_height`~~ : remplacés par `display_size`
 
@@ -88,7 +87,6 @@ Liste finale Python :
  'nbdayssincelastclick',
  'nbdisplay_1hour',
  'nbdisplayglobalapprox_1d_sum_xdevice',
- 'valueperclick',
  'display_size',
  'zonecostineuro']
 ```
