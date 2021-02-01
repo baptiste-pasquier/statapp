@@ -13,3 +13,4 @@ dependencies:
   - ipykernel
   - jupyterlab
   - flake8
+  - python-graphviz
