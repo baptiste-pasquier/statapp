@@ -9,6 +9,8 @@
 - `campaignvertical`
 - `is_interstitial`
 - `device_type`
+- `hour`
+- `weekday`
 
 Liste finale Python : 
 ```
@@ -17,7 +19,9 @@ Liste finale Python :
  'campaignscenario',
  'campaignvertical',
  'is_interstitial',
- 'device_type']
+ 'device_type',
+ 'hour',
+ 'weekday']
 ```
 
 ## Quantitative variables
