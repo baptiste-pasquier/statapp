@@ -1,18 +1,21 @@
 name: statapp
 channels:
-  - default
   - conda-forge
+  - default
 dependencies:
   - python
+  - ipykernel
+  - ipywidgets
+  - jupyterlab=2
+  - jupyterlab-git
+  - nbdime  
+  - nodejs
   - numpy
   - pandas
   - pip
   - matplotlib
   - seaborn
   - scikit-learn
-  - ipykernel
-  - jupyterlab
   - flake8
   - python-graphviz
   - tqdm
-  - ipywidgets

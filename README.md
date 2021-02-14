@@ -13,6 +13,13 @@ Cloner le répertoire puis exécuter à l'intérieur du répertoire :
 conda env create
 ```
 
+Instructions spécifiques à JupyterLab pour l'affichage des ProgressBar tqdm :
+```bash
+conda activate statapp
+jupyter nbextension enable --py widgetsnbextension
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+```
+
 * Lancement de JupyterLab ou Jupyter Notebook
 
 Exécuter à l'intérieur du répertoire : 
