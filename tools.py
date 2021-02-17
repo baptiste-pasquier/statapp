@@ -11,7 +11,7 @@ import xgboost as xgb
 import graphviz
 
 
-columns_quant = ['contextid',
+COLUMNS_QUANT = ['contextid',
  'campaignctrlast24h',
  'dayssincelastvisitdouble',
  'ltf_nbglobaldisplay_4w',
@@ -25,7 +25,7 @@ columns_quant = ['contextid',
  'display_size',
  'zonecostineuro']
 
-columns_cat = ['display_env',
+COLUMNS_CAT = ['display_env',
  'target_env',
  'campaignscenario',
  'campaignvertical',
@@ -35,7 +35,13 @@ columns_cat = ['display_env',
  'weekday']
 
 
-def datasets(df, verbose=True):    
+def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=True):
+    if verbose:
+        print("Columns_quant :")
+        display(columns_quant)
+        print("\nColumns_cat :")
+        display(columns_cat)
+
     X_quant = df[columns_quant]
     X_quant_scaled = StandardScaler().fit_transform(X_quant)
     if verbose:
@@ -49,30 +55,49 @@ def datasets(df, verbose=True):
         print(f"\nNombre de variables pour X_cat : {len(X_cat.columns)}\n")
         display(X_cat.columns)
 
-    X_quant_cat = df[columns_quant + columns_cat]
-    X_quant_cat = pd.get_dummies(X_quant_cat, columns=columns_cat, drop_first=True)
-    X_quant_cat_scaled = StandardScaler().fit_transform(X_quant_cat)
+    X = df[columns_quant + columns_cat]
+    X = pd.get_dummies(X, columns=columns_cat, drop_first=True)
+    X_scaled = StandardScaler().fit_transform(X)
     if verbose:
-        print(f"\nNombre de variables pour X_quant_cat : {len(X_quant_cat.columns)}")
+        print(f"\nNombre de variables pour X : {len(X.columns)}")
 
     y = df['is_display_clicked']
     
-    return X_quant, X_quant_scaled, X_cat, X_cat_scaled, X_quant_cat, X_quant_cat_scaled, y
-
+    dico = {'X_quant': X_quant,
+            'X_quant_scaled': X_quant_scaled,
+            'X_cat': X_cat, 
+            'X_cat_scaled': X_cat_scaled, 
+            'X': X, 
+            'X_scaled': X_scaled, 
+            'y': y}
+    
+    return dico
 
 
 class Modelisation():
-    def __init__(self, X, y, model, scaling=False):
+    def __init__(self, X, y, model, X_test=None, y_test=None, scaling=False):
+        """
+        Par défaut : division du dataset (X, y) en un training set et un test set, sauf si (X_test, y_test) est fourni.
+        """
+        if X_test is not None or y_test is not None:
+            assert X_test is not None
+            assert y_test is not None
+        
+        if X_test is None:
+            X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, random_state=1234)
+            X_train = pd.DataFrame(data=X_train, columns=X.columns)
+            X_test = pd.DataFrame(data=X_test, columns=X.columns)
+        else:
+            X_train = X
+            y_train = y
+        
         if scaling:
             columns = X.columns
             scaler = StandardScaler()
-            X = scaler.fit_transform(X)
-            X = pd.DataFrame(data=X, columns=columns)
-
-        X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.80, random_state=1234)
-        
-        X_train = pd.DataFrame(data=X_train, columns=X.columns)
-        X_test = pd.DataFrame(data=X_test, columns=X.columns)
+            X_train = scaler.fit_transform(X_train)
+            X_test = scaler.transform(X_test)
+            X_train = pd.DataFrame(data=X_train, columns=columns)
+            X_test = pd.DataFrame(data=X_test, columns=columns)
 
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
