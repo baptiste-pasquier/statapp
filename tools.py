@@ -35,22 +35,25 @@ columns_cat = ['display_env',
  'weekday']
 
 
-def datasets(df):    
+def datasets(df, verbose=True):    
     X_quant = df[columns_quant]
     X_quant_scaled = StandardScaler().fit_transform(X_quant)
-    print(f"\nNombre de variables pour X_quant : {len(X_quant.columns)}\n")
-    display(X_quant.columns)
+    if verbose:
+        print(f"\nNombre de variables pour X_quant : {len(X_quant.columns)}\n")
+        display(X_quant.columns)
 
     X_cat = df[columns_cat]
     X_cat = pd.get_dummies(X_cat, columns=columns_cat, drop_first=True)
     X_cat_scaled = StandardScaler().fit_transform(X_cat)
-    print(f"\nNombre de variables pour X_cat : {len(X_cat.columns)}\n")
-    display(X_cat.columns)
+    if verbose:
+        print(f"\nNombre de variables pour X_cat : {len(X_cat.columns)}\n")
+        display(X_cat.columns)
 
     X_quant_cat = df[columns_quant + columns_cat]
     X_quant_cat = pd.get_dummies(X_quant_cat, columns=columns_cat, drop_first=True)
     X_quant_cat_scaled = StandardScaler().fit_transform(X_quant_cat)
-    print(f"\nNombre de variables pour X_quant_cat : {len(X_quant_cat.columns)}")
+    if verbose:
+        print(f"\nNombre de variables pour X_quant_cat : {len(X_quant_cat.columns)}")
 
     y = df['is_display_clicked']
     
