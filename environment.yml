@@ -19,4 +19,4 @@ dependencies:
   - flake8
   - python-graphviz
   - tqdm
-  - py-xgboost
+  - py-xgboost=0.90
