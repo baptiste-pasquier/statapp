@@ -304,6 +304,32 @@ def graph_2scores_CV(dico, results, score1, score2, s=20, zoom=1):
         plt.title(f"{dico['model_name']} | GridSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres, avec {dico['data_frac']*100}% des données")
     plt.show()
 
+    
+def graph_3scores_CV(dico, results, score1, score2, score3, s=20, zoom=1):
+    """
+    Zoom sur les x% meilleurs combinaisons selon score1
+    """
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    if dico['type'] == 'RandomizedSearchCV':
+        n = int(zoom * dico['n_iter'])
+    else:
+        n = int(zoom * dico['len_grid'])
+        
+    results_sort = results.sort_values(by=f'mean_test_{score1}', ascending=False)
+
+    ax.scatter(results_sort[f'mean_test_{score1}'][:n], results_sort[f'mean_test_{score2}'][:n], results_sort[f'mean_test_{score3}'][:n], s=s, color='r', linestyle="None", marker='o')
+    
+    ax.set_xlabel(score1)
+    ax.set_ylabel(score2)
+    ax.set_zlabel(score3)
+    if dico['type'] == 'RandomizedSearchCV':
+        plt.title(f"{dico['model_name']} | RandomizedSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres parmi {dico['len_grid']}, avec {dico['data_frac']*100}% des données")
+    else:
+        plt.title(f"{dico['model_name']} | GridSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres, avec {dico['data_frac']*100}% des données")
+    plt.show()
+
 
 def graph_param_CV(dico, results, param=None, ncols=3):
     if param is None:
@@ -357,3 +383,5 @@ def best_score_CV(dico, results, score):
     display(best_params)
 
     return best_params
+
+

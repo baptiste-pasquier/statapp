@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python
   - ipykernel
+  - ipympl
   - ipywidgets
   - jupyterlab=2
   - jupyterlab-git
