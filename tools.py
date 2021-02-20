@@ -6,6 +6,7 @@ import graphviz
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 import sklearn
 import xgboost as xgb
 from IPython.display import display
@@ -201,7 +202,7 @@ class Modelisation():
 # ---------------------------------------------------------------------------- #
 
 
-def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_train_prepro.csv', name='', scoring=['f1', 'recall', 'precision'], random_state=None, n_jobs=-1):
+def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_train_prepro.csv', scaling=False, name='', scoring=['f1', 'recall', 'precision'], random_state=None, n_jobs=-1):
     print('RandomizedSearchCV' if random else 'GridSearchCV')
     print('******************')
     print(f"\nNombre total de combinaisons de paramètres : {len(ParameterGrid(params))}")
@@ -211,8 +212,12 @@ def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_
 
     df = pd.read_csv(csv).sample(frac=data_frac)
     datasets_df = datasets(df, verbose=False)
-    X = datasets_df['X']
+    if scaling:
+        X = datasets_df['X_scaled']
+    else:
+        X = datasets_df['X']
     y = datasets_df['y']
+    
 
     if random:
         if random_state is None:
@@ -227,6 +232,7 @@ def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_
     temps = time.strftime('%H:%M:%S', time.gmtime(time.time() - t1))
 
     results = pd.DataFrame(search.cv_results_)
+    results = results.convert_dtypes()
 
     len_grid = len(ParameterGrid(params))
 
@@ -331,7 +337,10 @@ def graph_3scores_CV(dico, results, score1, score2, score3, s=20, zoom=1):
     plt.show()
 
 
-def graph_param_CV(dico, results, param=None, ncols=3):
+def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, width=5):
+    """
+    xscale = {param1: 'log'}
+    """
     if param is None:
         list_param = dico['params'].keys()
     else:
@@ -342,11 +351,9 @@ def graph_param_CV(dico, results, param=None, ncols=3):
         nrows = ceil(len(list_param) / ncols)
     else:
         ncols, nrows = 1, 1
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(5 * ncols, 3 * nrows))
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(width * ncols, height * nrows))
 
     for i, param in enumerate(list_param):
-        r = list(range(len(set(results[f'param_{param}']))))
-
         if len(list_param) == 1:
             ax = axes
         elif len(list_param) <= ncols:
@@ -354,24 +361,62 @@ def graph_param_CV(dico, results, param=None, ncols=3):
         else:
             ax = axes[i // ncols, i % ncols]
 
-        for score in dico['scoring']:
-            a = results.groupby(f'param_{param}').mean()
-            a.sort_index(inplace=True, ascending=True)
-            ax.plot(r, a[f"mean_test_{score}"], label=score, marker='o')
+        if is_numeric_dtype(results[f'param_{param}']):            
+            nb_param = results[f'param_{param}'].nunique()
+            numeric = True
+        else:
+            results[f'param_{param}'] = results[f'param_{param}'].astype(str)
+            nb_param = results[f'param_{param}'].nunique()
+            numeric = False
+
+        if nb_param <= 15 or not numeric: # xticks régulier
+            r = list(range(nb_param))
+            for score in dico['scoring']:
+                a = results.groupby(f'param_{param}').mean()
+                if param == 'class_weight':
+                    a.sort_index(inplace=True, ascending=True, key=key_class_weight)
+                else:
+                    a.sort_index(inplace=True, ascending=True)
+                ax.plot(r, list(a[f"mean_test_{score}"]), label=score, marker='o')
+            ax.set_xticks(r)
+            ax.set_xticklabels(a.index)
+            if not numeric:
+                ax.tick_params(axis='x', labelrotation=45)
+        else: # Numérique et plus de 15 valeurs
+            for score in dico['scoring']:
+                a = results.groupby(f'param_{param}').mean()
+                a.sort_index(inplace=True, ascending=True)
+                ax.plot(a.index, list(a[f"mean_test_{score}"]), label=score)        
+            if param in xscale:
+                ax.set_xscale(xscale[param])
 
         ax.set_xlabel(param)
         ax.set_ylabel("score")
-        ax.set_xticks(r)
-        ax.set_xticklabels(a.index)
         ax.legend()
+    
+    if len(list_param) % ncols != 0:
+        if len(list_param) > ncols:
+            for i in range(len(list_param) % ncols, ncols):
+                axes[-1, i].set_visible(False)
+        elif len(list_param) > 1:
+            for i in range(len(list_param) % ncols, ncols):
+                axes[i].set_visible(False)
 
-    if len(list_param) > ncols:
-        for i in range(len(list_param) % ncols, ncols):
-            axes[-1, i].set_visible(False)
-
+    fig.suptitle(f"{dico['model_name']} : effet des paramètres", fontsize=14)
     fig.tight_layout()
-    plt.title(f"{dico['model_name']} : effet des paramètres")
     plt.show()
+
+    
+def key_class_weight(string):
+    if string == 'None':
+        return -2
+    if string == 'balanced':
+        return -1
+    else:
+        dico = eval(string)
+        return dico[1] / dico[0]
+
+key_class_weight = np.vectorize(key_class_weight)
 
 
 def best_score_CV(dico, results, score):
