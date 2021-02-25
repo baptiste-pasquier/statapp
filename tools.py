@@ -88,6 +88,30 @@ def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=T
     return dico
 
 
+
+intervals = (
+    ('weeks', 604800),  # 60 * 60 * 24 * 7
+    ('days', 86400),    # 60 * 60 * 24
+    ('h', 3600),    # 60 * 60
+    ('min', 60),
+    ('s', 1),
+    )
+
+
+def display_time(seconds, granularity=5):
+    result = []
+    for name, count in intervals:
+        value = int(seconds // count)
+        if name == 's':
+            value = round(seconds, 3)
+        if value:
+            seconds -= value * count
+            if value == 1:
+                name = name.rstrip('s')
+            result.append("{}{}".format(value, name))
+    return ', '.join(result[:granularity])
+
+
 # ---------------------------------------------------------------------------- #
 #                                 Modélisation                                 #
 # ---------------------------------------------------------------------------- #
@@ -116,9 +140,13 @@ class Modelisation():
             X_test = scaler.transform(X_test)
             X_train = pd.DataFrame(data=X_train, columns=columns)
             X_test = pd.DataFrame(data=X_test, columns=columns)
-
+        
+        t1 = time.time()
         model.fit(X_train, y_train)
+        self.training_time = time.time() - t1
+        t1 = time.time()
         y_pred = model.predict(X_test)
+        self.prediction_time = time.time() - t1
 
         cm = confusion_matrix(y_test, y_pred)
         probs = model.predict_proba(X_test)[:, 1]
@@ -137,8 +165,12 @@ class Modelisation():
         NPV = TN / (TN + FN)
         # F1_Score
         F1 = (2 * Precision * Recall) / (Precision + Recall)
+        # F3_Score
+        F3 = (10 * Precision * Recall) / (9 * Precision + Recall)
+        # F5_Score
+        F5 = (26 * Precision * Recall) / (25 * Precision + Recall)
 
-        metrics_score = {'f1': F1, 'recall': Recall, 'negative predictive value': NPV, 'precision': Precision, 'roc_auc': sc_roc_auc}
+        metrics_score = {'f1': F1, 'f3': F3, 'f5': F5, 'recall': Recall, 'negative predictive value': NPV, 'precision': Precision, 'roc_auc': sc_roc_auc}
 
         self.X_train, self.X_test, self.y_train, self.y_test = X_train, X_test, y_train, y_test
         self.model = model
@@ -157,6 +189,8 @@ class Modelisation():
     def show_metrics_score(self):
         for key, value in self.metrics_score.items():
             print(f"{key} : {value:.4f}")
+        print(f"training time : {display_time(self.training_time)}")
+        print(f"prediction time : {display_time(self.prediction_time)}")
 
     def show_ROC(self):
         fpr, tpr, _ = metrics.roc_curve(self.y_test, self.probs)
@@ -428,5 +462,4 @@ def best_score_CV(dico, results, score):
     display(best_params)
 
     return best_params
-
 
