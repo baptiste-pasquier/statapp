@@ -236,7 +236,7 @@ class Modelisation():
 # ---------------------------------------------------------------------------- #
 
 
-def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_train_prepro.csv', scaling=False, name='', scoring=['f1', 'recall', 'precision'], random_state=None, n_jobs=-1):
+def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_train_prepro.csv', scaling=False, scoring=['f1', 'recall', 'precision'], name='', random_state=None, n_jobs=-1):
     print('RandomizedSearchCV' if random else 'GridSearchCV')
     print('******************')
     print(f"\nNombre total de combinaisons de paramètres : {len(ParameterGrid(params))}")
