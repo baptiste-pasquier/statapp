@@ -19,6 +19,8 @@ from sklearn.model_selection import (GridSearchCV, ParameterGrid,
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
+from imblearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTENC, RandomOverSampler
 
 
 COLUMNS_QUANT = ['contextid',
@@ -55,6 +57,9 @@ def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=T
         display(columns_quant)
         print("\nColumns_cat :")
         display(columns_cat)
+    
+    df = df[columns_quant + columns_cat + ['is_display_clicked']]
+    df = df.dropna()
 
     X_quant = df[columns_quant]
     X_quant_scaled = StandardScaler().fit_transform(X_quant)
@@ -235,6 +240,30 @@ class Modelisation():
 #                             Randomized/GridSearch                            #
 # ---------------------------------------------------------------------------- #
 
+def f_model_name(model):
+    if isinstance(model, XGBClassifier):
+        return 'XGBoost'
+    elif isinstance(model, LogisticRegression):
+        return 'LR'
+    elif isinstance(model, DecisionTreeClassifier):
+        return 'Tree'
+    elif isinstance(model, RandomForestClassifier):
+        return 'Forest'
+    elif isinstance(model, RandomOverSampler):
+        return 'RandomOver'
+    elif isinstance(model, SMOTENC):
+        return 'SMOTENC'
+    elif isinstance(model, Pipeline):
+        steps = model.steps
+        return f_model_name(steps)
+    elif isinstance(model, list):
+        if len(model) == 1:
+            return f_model_name(model[0][1])
+        else:
+            return f_model_name(model[0][1]) + '_' + f_model_name(model[1:])
+    else:
+        return str(model)
+
 
 def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_train_prepro.csv', scaling=False, scoring=['f1', 'recall', 'precision'], name='', random_state=None, n_jobs=-1):
     print('RandomizedSearchCV' if random else 'GridSearchCV')
@@ -270,16 +299,7 @@ def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_
 
     len_grid = len(ParameterGrid(params))
 
-    if isinstance(model, XGBClassifier):
-        model_name = 'XGBoost'
-    elif isinstance(model, LogisticRegression):
-        model_name = 'LR'
-    elif isinstance(model, DecisionTreeClassifier):
-        model_name = 'Tree'
-    elif isinstance(model, RandomForestClassifier):
-        model_name = 'Forest'
-    else:
-        model_name = ''
+    model_name = f_model_name(model)
 
     dico = {'model': str(model),
             'model_name': model_name,
@@ -449,6 +469,7 @@ def key_class_weight(string):
     else:
         dico = eval(string)
         return dico[1] / dico[0]
+
 
 key_class_weight = np.vectorize(key_class_weight)
 
