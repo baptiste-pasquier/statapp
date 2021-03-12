@@ -288,7 +288,7 @@ def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_
         else:
             search = RandomizedSearchCV(model, params, n_iter=n_iter, scoring=scoring, refit=False, n_jobs=n_jobs, cv=5, random_state=random_state)
     else:
-        search = GridSearchCV(model, params, scoring=scoring, refit=False, n_jobs=-1, cv=5)
+        search = GridSearchCV(model, params, scoring=scoring, refit=False, n_jobs=n_jobs, cv=5)
 
     t1 = time.time()
     search.fit(X, y)
@@ -308,6 +308,7 @@ def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_
             'n_iter': n_iter,
             'data_frac': data_frac,
             'temps': temps,
+            'n_jobs': n_jobs,
             'params': params,
             'scoring': scoring
             }
