@@ -265,7 +265,7 @@ def f_model_name(model):
         return str(model)
 
 
-def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_train_prepro.csv', scaling=False, scoring=['f1', 'recall', 'precision'], name='', random_state=None, n_jobs=-1):
+def SearchCV(model, params, data_frac=1, random=False, n_iter=10, csv='data/df_train_prepro.csv', scaling=False, scoring=['f1', 'recall', 'precision'], name='', random_state=None, n_jobs=-1):
     print('RandomizedSearchCV' if random else 'GridSearchCV')
     print('******************')
     print(f"\nNombre total de combinaisons de paramètres : {len(ParameterGrid(params))}")
@@ -292,7 +292,7 @@ def SearchCV(model, params, data_frac=1, random=True, n_iter=5000, csv='data/df_
 
     t1 = time.time()
     search.fit(X, y)
-    temps = time.strftime('%H:%M:%S', time.gmtime(time.time() - t1))
+    temps = display_time(time.time() - t1)
 
     results = pd.DataFrame(search.cv_results_)
     results = results.convert_dtypes()
@@ -481,6 +481,7 @@ def best_score_CV(dico, results, score):
     display(results_sort.head(10))
 
     best_params = results_sort.iloc[0].params
+    print(f"Meilleure combinaison de paramètres pour {score} :")
     display(best_params)
 
     return best_params
