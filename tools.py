@@ -428,7 +428,7 @@ def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, widt
             r = list(range(nb_param))
             for score in dico['scoring']:
                 a = results.groupby(f'param_{param}').mean()
-                if param == 'class_weight':
+                if param in ['class_weight', 'model__class_weight']:
                     a.sort_index(inplace=True, ascending=True, key=key_class_weight)
                 else:
                     a.sort_index(inplace=True, ascending=True)
