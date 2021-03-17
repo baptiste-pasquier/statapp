@@ -457,7 +457,7 @@ def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, widt
             for i in range(len(list_param) % ncols, ncols):
                 axes[i].set_visible(False)
 
-    fig.suptitle(f"{dico['model_name']} : effet des paramètres", fontsize=14)
+    fig.suptitle(f"{dico['model_name']} : effet des paramètres", fontsize=14, y=1)
     fig.tight_layout()
     plt.show()
 
