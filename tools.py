@@ -331,11 +331,12 @@ def SearchCV(model, params, data_frac=1, random=False, n_iter=10, csv='data/df_t
     pickle.dump((dico, results), open('backups/' + filename + '.pkl', 'wb'))
 
 
-def restauration_CV(filename):
+def restauration_CV(filename, verbose=True):
     dico, results = pickle.load(open('backups/' + filename + '.pkl', 'rb'))
-
-    for key, value in dico.items():
-        print(f"{key} : {value}")
+    
+    if verbose:
+        for key, value in dico.items():
+            print(f"{key} : {value}")
 
     # On enlève toutes les colonnes split
     results = results.loc[:, ~results.columns.str.startswith('split')]
@@ -364,6 +365,7 @@ def graph_2scores_CV(dico, results, score1, score2, s=20, zoom=1):
     else:
         plt.title(f"{dico['model_name']} | GridSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres, avec {dico['data_frac']*100}% des données")
     plt.show()
+
 
     
 def graph_3scores_CV(dico, results, score1, score2, score3, s=20, zoom=1):
