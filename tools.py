@@ -418,7 +418,8 @@ def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, widt
         else:
             ax = axes[i // ncols, i % ncols]
 
-        if is_numeric_dtype(results[f'param_{param}']):            
+        if is_numeric_dtype(results[f'param_{param}']):
+            results[f'param_{param}'].fillna(value=-1, inplace=True)
             nb_param = results[f'param_{param}'].nunique()
             numeric = True
         else:
