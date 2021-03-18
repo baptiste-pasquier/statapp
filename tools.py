@@ -51,7 +51,7 @@ COLUMNS_CAT = ['display_env',
 #                             Création des datasets                            #
 # ---------------------------------------------------------------------------- #
 
-def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=True):
+def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=True, array=False):
     if verbose:
         print("Columns_quant :")
         display(columns_quant)
@@ -62,33 +62,44 @@ def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=T
     df = df.dropna()
 
     X_quant = df[columns_quant]
-    X_quant_scaled = StandardScaler().fit_transform(X_quant)
+    X_quant_scaled = (X_quant - X_quant.mean()) / X_quant.std()
     if verbose:
         print(f"\nNombre de variables pour X_quant : {len(X_quant.columns)}\n")
         display(X_quant.columns)
 
     X_cat = df[columns_cat]
     X_cat = pd.get_dummies(X_cat, columns=columns_cat, drop_first=True)
-    X_cat_scaled = StandardScaler().fit_transform(X_cat)
+    X_cat_scaled = (X_cat - X_cat.mean()) / X_cat.std()
     if verbose:
         print(f"\nNombre de variables pour X_cat : {len(X_cat.columns)}\n")
         display(X_cat.columns)
 
-    X = df[columns_quant + columns_cat]
-    X = pd.get_dummies(X, columns=columns_cat, drop_first=True)
-    X_scaled = StandardScaler().fit_transform(X)
+    X = pd.concat([X_quant, X_cat], axis=1)
+    X_scaled = pd.concat([X_quant_scaled, X_cat_scaled], axis=1)
+    X_only_quant_scaled = pd.concat([X_quant_scaled, X_cat], axis=1)
     if verbose:
         print(f"\nNombre de variables pour X : {len(X.columns)}")
 
     y = df['is_display_clicked']
 
-    dico = {'X_quant': X_quant,
-            'X_quant_scaled': X_quant_scaled,
-            'X_cat': X_cat,
-            'X_cat_scaled': X_cat_scaled,
-            'X': X,
-            'X_scaled': X_scaled,
-            'y': y}
+    if array:
+        dico = {'X_quant': X_quant.to_numpy(),
+                'X_quant_scaled': X_quant_scaled.to_numpy(),
+                'X_cat': X_cat.to_numpy(),
+                'X_cat_scaled': X_cat_scaled.to_numpy(),
+                'X': X.to_numpy(),
+                'X_scaled': X_scaled.to_numpy(),
+                'X_only_quant_scaled': X_only_quant_scaled.to_numpy(),
+                'y': y.to_numpy()}
+    else:
+        dico = {'X_quant': X_quant,
+                'X_quant_scaled': X_quant_scaled,
+                'X_cat': X_cat,
+                'X_cat_scaled': X_cat_scaled,
+                'X': X,
+                'X_scaled': X_scaled,
+                'X_only_quant_scaled': X_only_quant_scaled,
+                'y': y}
 
     return dico
 
