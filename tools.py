@@ -58,7 +58,7 @@ def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=T
         print("\nColumns_cat :")
         display(columns_cat)
     
-    df = df[columns_quant + columns_cat + ['is_display_clicked']]
+    df = df[COLUMNS_QUANT + COLUMNS_CAT + ['is_display_clicked']]
     df = df.dropna()
 
     X_quant = df[columns_quant]
@@ -67,8 +67,9 @@ def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=T
         print(f"\nNombre de variables pour X_quant : {len(X_quant.columns)}\n")
         display(X_quant.columns)
 
-    X_cat = df[columns_cat]
-    X_cat = pd.get_dummies(X_cat, columns=columns_cat, drop_first=True)
+    X_cat = df[COLUMNS_CAT]
+    X_cat = pd.get_dummies(X_cat, columns=COLUMNS_CAT, drop_first=True)
+    X_cat = X_cat[columns_cat]
     X_cat_scaled = (X_cat - X_cat.mean()) / X_cat.std()
     if verbose:
         print(f"\nNombre de variables pour X_cat : {len(X_cat.columns)}\n")
