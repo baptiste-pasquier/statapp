@@ -66,10 +66,20 @@ def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=T
     if verbose:
         print(f"\nNombre de variables pour X_quant : {len(X_quant.columns)}\n")
         display(X_quant.columns)
-
-    X_cat = df[COLUMNS_CAT]
-    X_cat = pd.get_dummies(X_cat, columns=COLUMNS_CAT, drop_first=True)
-    X_cat = X_cat[columns_cat]
+        
+    is_columns_cat_dummy = False
+    for elem in columns_cat:
+        if elem not in COLUMNS_CAT:
+            is_columns_cat_dummy = True
+    
+    if not is_columns_cat_dummy:
+        X_cat = df[columns_cat]
+        X_cat = pd.get_dummies(X_cat, columns=columns_cat, drop_first=True)
+    else:
+        X_cat = df[COLUMNS_CAT]
+        X_cat = pd.get_dummies(X_cat, columns=COLUMNS_CAT, drop_first=True)
+        X_cat = X_cat[columns_cat]
+    
     X_cat_scaled = (X_cat - X_cat.mean()) / X_cat.std()
     if verbose:
         print(f"\nNombre de variables pour X_cat : {len(X_cat.columns)}\n")
@@ -277,7 +287,7 @@ def f_model_name(model):
         return str(model)
 
 
-def SearchCV(model, params, data_frac=1, random=False, n_iter=10, csv='data/df_train_prepro.csv', scaling=False, scoring=['f1', 'recall', 'precision'], name='', random_state=None, n_jobs=-1):
+def SearchCV(model, params, datasets_df=None, data_frac=1, random=False, n_iter=10, csv='data/df_train_prepro.csv', scaling=False, scoring=['f1', 'recall', 'precision'], name='', random_state=None, n_jobs=-1):
     print('RandomizedSearchCV' if random else 'GridSearchCV')
     print('******************')
     print(f"\nNombre total de combinaisons de paramètres : {len(ParameterGrid(params))}")
@@ -285,8 +295,10 @@ def SearchCV(model, params, data_frac=1, random=False, n_iter=10, csv='data/df_t
     if random:
         print(f"Nombre de combinaisons aléatoires testées : {n_iter}\n")
 
-    df = pd.read_csv(csv).sample(frac=data_frac)
-    datasets_df = datasets(df, verbose=False)
+    if datasets_df is None:
+        df = pd.read_csv(csv).sample(frac=data_frac)
+        datasets_df = datasets(df, verbose=False)
+
     if scaling:
         X = datasets_df['X_scaled']
     else:
