@@ -1,1 +1,34 @@
-{"C": 52.98316906283702, "class_weight": "balanced"}
+{
+  "LR": {
+    "C": 0.0038566204211634724,
+    "class_weight": {
+      "0": 1,
+      "1": 20
+    }
+  },
+  "RandomOver_LR": {
+    "model__C": 0.17433288221999874,
+    "model__class_weight": {
+      "0": 1,
+      "1": 2
+    },
+    "over__sampling_strategy": 0.6
+  },
+  "SMOTENC_LR": {
+    "over__sampling_strategy": 0.1,
+    "over__k_neighbors": 4,
+    "model__class_weight": {
+      "0": 1,
+      "1": 18
+    },
+    "model__C": 0.007278953843983146,
+    "over__n_jobs": -1
+  },
+  "LR_RFECV": {
+    "C": 0.007278953843983146,
+    "class_weight": {
+      "0": 1,
+      "1": 20
+    }
+  }
+}

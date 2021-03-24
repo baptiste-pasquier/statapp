@@ -296,7 +296,7 @@ def SearchCV(model, params, datasets_df=None, data_frac=1, random=False, n_iter=
         print(f"Nombre de combinaisons aléatoires testées : {n_iter}\n")
 
     if datasets_df is None:
-        df = pd.read_csv(csv).sample(frac=data_frac)
+        df = pd.read_csv(csv).sample(frac=data_frac, random_state=random_state)
         datasets_df = datasets(df, verbose=False)
 
     if scaling:
@@ -307,10 +307,7 @@ def SearchCV(model, params, datasets_df=None, data_frac=1, random=False, n_iter=
     
 
     if random:
-        if random_state is None:
-            search = RandomizedSearchCV(model, params, n_iter=n_iter, scoring=scoring, refit=False, n_jobs=n_jobs, cv=5)
-        else:
-            search = RandomizedSearchCV(model, params, n_iter=n_iter, scoring=scoring, refit=False, n_jobs=n_jobs, cv=5, random_state=random_state)
+        search = RandomizedSearchCV(model, params, n_iter=n_iter, scoring=scoring, refit=False, n_jobs=n_jobs, cv=5, random_state=random_state)
     else:
         search = GridSearchCV(model, params, scoring=scoring, refit=False, n_jobs=n_jobs, cv=5)
 
@@ -324,6 +321,8 @@ def SearchCV(model, params, datasets_df=None, data_frac=1, random=False, n_iter=
     len_grid = len(ParameterGrid(params))
 
     model_name = f_model_name(model)
+    if name:
+        model_name += f'_{name}'
 
     dico = {'model': str(model),
             'model_name': model_name,
@@ -346,8 +345,6 @@ def SearchCV(model, params, datasets_df=None, data_frac=1, random=False, n_iter=
         filename += 'Grid_'
     filename += f'{len_grid}_'
     filename += f'{data_frac}'
-    if name:
-        filename += f'_{name}'
 
     print(f"\nTemps : {temps}")
     print(f"Exportation : {filename}")
@@ -513,3 +510,33 @@ def best_score_CV(dico, results, score):
 
     return best_params
 
+
+def graph_2scores_CV_comp(dr_list, score1, score2, s=20, alpha=1, zoom=1):
+    """
+    Comparaison de plusieurs modèles
+    dr_list : [(dico1, results1), (dico2, results2)]
+    """
+    plt.figure(figsize=(14, 8))
+
+    if isinstance(s, float) or isinstance(s, int):
+        s = [s] * len(dr_list)
+
+    for i, elem in enumerate(dr_list):
+        dico, results = elem
+
+        if dico['type'] == 'RandomizedSearchCV':
+            n = int(zoom * dico['n_iter'])
+        else:
+            n = int(zoom * dico['len_grid'])
+
+        results_sort = results.sort_values(by=f'mean_test_{score1}', ascending=False)
+        plt.scatter(results_sort[f'mean_test_{score1}'][:n], results_sort[f'mean_test_{score2}'][:n], marker='o', s=s[i], alpha=alpha, label=dico['model_name'])
+
+    plt.xlabel(score1)
+    plt.ylabel(score2)
+
+    legend = plt.legend()
+    for lh in legend.legendHandles:
+        lh.set_alpha(1.0)
+        lh.set_sizes([30])
+    plt.show()
