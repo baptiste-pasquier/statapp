@@ -1,1 +1,1 @@
-{"columns_quant": ["zonecostineuro", "nbdisplay_1hour", "display_size", "campaignctrlast24h", "nbdayssincelastclick"], "columns_cat": ["display_env_app_ios", "is_interstitial_True", "device_type_Desktop", "campaignscenario_13", "target_env_2", "device_type_iPhone"]}
+{"columns_quant": ["nbdisplay_1hour", "nbdayssincelastclick", "display_size", "campaignctrlast24h", "zonecostineuro"], "columns_cat": ["target_env_2", "is_interstitial_True", "display_env_app_ios", "device_type_iPhone", "device_type_Desktop", "campaignscenario_13"]}

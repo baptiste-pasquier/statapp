@@ -1,1 +1,1 @@
-{"columns_quant": ["display_size", "nbdayssincelastclick", "campaignctrlast24h", "nbdisplay_1hour", "dayssincelastvisitdouble", "nbdisplayglobalapprox_1d_sum_xdevice", "contextid", "zonecostineuro"], "columns_cat": ["is_interstitial_True"]}
+{"columns_quant": ["contextid", "nbdisplayglobalapprox_1d_sum_xdevice", "nbdayssincelastclick", "nbdisplay_1hour", "display_size", "campaignctrlast24h", "zonecostineuro", "dayssincelastvisitdouble"], "columns_cat": ["is_interstitial_True"]}
