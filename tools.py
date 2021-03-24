@@ -6,22 +6,22 @@ import graphviz
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
 import sklearn
 import xgboost as xgb
+from imblearn.over_sampling import SMOTENC, RandomOverSampler
+from imblearn.pipeline import Pipeline
 from IPython.display import display
+from pandas.api.types import is_numeric_dtype
+from scipy.sparse import csr_matrix
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, fbeta_score, make_scorer
 from sklearn.model_selection import (GridSearchCV, ParameterGrid,
                                      RandomizedSearchCV, train_test_split)
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
-from imblearn.pipeline import Pipeline
-from imblearn.over_sampling import SMOTENC, RandomOverSampler
-from scipy.sparse import csr_matrix
 
 
 COLUMNS_QUANT = ['contextid',
