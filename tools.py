@@ -149,7 +149,7 @@ def display_time(seconds, granularity=5):
 # ---------------------------------------------------------------------------- #
 
 class Modelisation():
-    def __init__(self, X, y, model, X_test=None, y_test=None, scaling=False):
+    def __init__(self, X, y, model, X_test=None, y_test=None):
         """
         Par défaut : division du dataset (X, y) en un training set et un test set, sauf si (X_test, y_test) est fourni.
         """
@@ -165,13 +165,13 @@ class Modelisation():
             X_train = X
             y_train = y
 
-        if scaling:
-            columns = X.columns
-            scaler = StandardScaler()
-            X_train = scaler.fit_transform(X_train)
-            X_test = scaler.transform(X_test)
-            X_train = pd.DataFrame(data=X_train, columns=columns)
-            X_test = pd.DataFrame(data=X_test, columns=columns)
+        # if scaling:
+        #     columns = X.columns
+        #     scaler = StandardScaler()
+        #     X_train = scaler.fit_transform(X_train)
+        #     X_test = scaler.transform(X_test)
+        #     X_train = pd.DataFrame(data=X_train, columns=columns)
+        #     X_test = pd.DataFrame(data=X_test, columns=columns)
 
         t1 = time.time()
         model.fit(X_train, y_train)
@@ -339,7 +339,7 @@ def SearchCV(model, params, **kwargs):
     # Création des datasets
     csv = 'data/df_train_prepro.csv'
     df = pd.read_csv(csv).sample(frac=data_frac, random_state=random_state)
-    datasets_df = datasets(df, columns_quant=columns_quant, columns_cat=columns_cat, verbose=False, sparse=True)
+    datasets_df = datasets(df, columns_quant=columns_quant, columns_cat=columns_cat, verbose=False, sparse=True, drop=drop)
 
     if scaling:
         X = datasets_df['X_only_quant_scaled']
