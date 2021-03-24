@@ -6,22 +6,22 @@ import graphviz
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
 import sklearn
 import xgboost as xgb
+from imblearn.over_sampling import SMOTENC, RandomOverSampler
+from imblearn.pipeline import Pipeline
 from IPython.display import display
+from pandas.api.types import is_numeric_dtype
+from scipy.sparse import csr_matrix
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, fbeta_score, make_scorer
 from sklearn.model_selection import (GridSearchCV, ParameterGrid,
                                      RandomizedSearchCV, train_test_split)
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
-from imblearn.pipeline import Pipeline
-from imblearn.over_sampling import SMOTENC, RandomOverSampler
-from scipy.sparse import csr_matrix
 
 
 COLUMNS_QUANT = ['contextid',
@@ -149,7 +149,7 @@ def display_time(seconds, granularity=5):
 # ---------------------------------------------------------------------------- #
 
 class Modelisation():
-    def __init__(self, X, y, model, X_test=None, y_test=None, scaling=False):
+    def __init__(self, X, y, model, X_test=None, y_test=None):
         """
         Par défaut : division du dataset (X, y) en un training set et un test set, sauf si (X_test, y_test) est fourni.
         """
@@ -165,13 +165,13 @@ class Modelisation():
             X_train = X
             y_train = y
 
-        if scaling:
-            columns = X.columns
-            scaler = StandardScaler()
-            X_train = scaler.fit_transform(X_train)
-            X_test = scaler.transform(X_test)
-            X_train = pd.DataFrame(data=X_train, columns=columns)
-            X_test = pd.DataFrame(data=X_test, columns=columns)
+        # if scaling:
+        #     columns = X.columns
+        #     scaler = StandardScaler()
+        #     X_train = scaler.fit_transform(X_train)
+        #     X_test = scaler.transform(X_test)
+        #     X_train = pd.DataFrame(data=X_train, columns=columns)
+        #     X_test = pd.DataFrame(data=X_test, columns=columns)
 
         t1 = time.time()
         model.fit(X_train, y_train)
@@ -339,7 +339,7 @@ def SearchCV(model, params, **kwargs):
     # Création des datasets
     csv = 'data/df_train_prepro.csv'
     df = pd.read_csv(csv).sample(frac=data_frac, random_state=random_state)
-    datasets_df = datasets(df, columns_quant=columns_quant, columns_cat=columns_cat, verbose=False, sparse=True)
+    datasets_df = datasets(df, columns_quant=columns_quant, columns_cat=columns_cat, verbose=False, sparse=True, drop=drop)
 
     if scaling:
         X = datasets_df['X_only_quant_scaled']
