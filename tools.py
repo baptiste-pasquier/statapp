@@ -13,14 +13,15 @@ from IPython.display import display
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, fbeta_score, make_scorer
 from sklearn.model_selection import (GridSearchCV, ParameterGrid,
                                      RandomizedSearchCV, train_test_split)
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
 from imblearn.pipeline import Pipeline
 from imblearn.over_sampling import SMOTENC, RandomOverSampler
+from scipy.sparse import csr_matrix
 
 
 COLUMNS_QUANT = ['contextid',
@@ -51,13 +52,12 @@ COLUMNS_CAT = ['display_env',
 #                             Création des datasets                            #
 # ---------------------------------------------------------------------------- #
 
-def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=True, array=False):
+def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=True, sparse=False, drop='if_binary'):
     if verbose:
-        print("Columns_quant :")
-        display(columns_quant)
-        print("\nColumns_cat :")
-        display(columns_cat)
-    
+        print(f"Columns_quant : {'default' if columns_quant == COLUMNS_QUANT else columns_quant}")
+        print(f"Columns_cat : {'default' if columns_cat == COLUMNS_CAT else columns_cat}")
+        print(f"drop : {drop}")
+
     df = df[COLUMNS_QUANT + COLUMNS_CAT + ['is_display_clicked']]
     df = df.dropna()
 
@@ -66,68 +66,72 @@ def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=T
     if verbose:
         print(f"\nNombre de variables pour X_quant : {len(X_quant.columns)}\n")
         display(X_quant.columns)
-        
-    is_columns_cat_dummy = False
+
+    is_columns_cat_dummy = False    # True si columns_cat contient des dummy variables
     for elem in columns_cat:
         if elem not in COLUMNS_CAT:
             is_columns_cat_dummy = True
-    
+
     if not is_columns_cat_dummy:
         X_cat = df[columns_cat]
-        X_cat = pd.get_dummies(X_cat, columns=columns_cat, drop_first=True)
+        index = X_cat.index
+        enc = OneHotEncoder(drop=drop, sparse=False)
+        X_cat = enc.fit_transform(X_cat)
+        X_cat = pd.DataFrame(X_cat, columns=enc.get_feature_names(columns_cat), index=index)
     else:
         X_cat = df[COLUMNS_CAT]
-        X_cat = pd.get_dummies(X_cat, columns=COLUMNS_CAT, drop_first=True)
+        index = X_cat.index
+        enc = OneHotEncoder(drop=drop, sparse=False)
+        X_cat = enc.fit_transform(X_cat)
+        X_cat = pd.DataFrame(X_cat, columns=enc.get_feature_names(COLUMNS_CAT), index=index)
         X_cat = X_cat[columns_cat]
-    
+
     X_cat_scaled = (X_cat - X_cat.mean()) / X_cat.std()
     if verbose:
         print(f"\nNombre de variables pour X_cat : {len(X_cat.columns)}\n")
         display(X_cat.columns)
 
     X = pd.concat([X_quant, X_cat], axis=1)
-    X_scaled = pd.concat([X_quant_scaled, X_cat_scaled], axis=1)
+    X_all_scaled = pd.concat([X_quant_scaled, X_cat_scaled], axis=1)
     X_only_quant_scaled = pd.concat([X_quant_scaled, X_cat], axis=1)
     if verbose:
         print(f"\nNombre de variables pour X : {len(X.columns)}")
 
     y = df['is_display_clicked']
 
-    if array:
-        dico = {'X_quant': X_quant.to_numpy(),
-                'X_quant_scaled': X_quant_scaled.to_numpy(),
-                'X_cat': X_cat.to_numpy(),
-                'X_cat_scaled': X_cat_scaled.to_numpy(),
-                'X': X.to_numpy(),
-                'X_scaled': X_scaled.to_numpy(),
-                'X_only_quant_scaled': X_only_quant_scaled.to_numpy(),
-                'y': y.to_numpy()}
+    if sparse:
+        dico = {'X_quant': csr_matrix(X_quant),
+                'X_quant_scaled': csr_matrix(X_quant_scaled),
+                'X_cat': csr_matrix(X_cat),
+                'X_cat_scaled': csr_matrix(X_cat_scaled),
+                'X': csr_matrix(X),
+                'X_only_quant_scaled': csr_matrix(X_only_quant_scaled),
+                'X_all_scaled': csr_matrix(X_all_scaled),
+                'y': y}
     else:
         dico = {'X_quant': X_quant,
                 'X_quant_scaled': X_quant_scaled,
                 'X_cat': X_cat,
                 'X_cat_scaled': X_cat_scaled,
                 'X': X,
-                'X_scaled': X_scaled,
                 'X_only_quant_scaled': X_only_quant_scaled,
+                'X_all_scaled': X_all_scaled,
                 'y': y}
 
     return dico
 
 
-
-intervals = (
+TIME_INTERVALS = (
     ('weeks', 604800),  # 60 * 60 * 24 * 7
     ('days', 86400),    # 60 * 60 * 24
     ('h', 3600),    # 60 * 60
     ('min', 60),
-    ('s', 1),
-    )
+    ('s', 1))
 
 
 def display_time(seconds, granularity=5):
     result = []
-    for name, count in intervals:
+    for name, count in TIME_INTERVALS:
         value = int(seconds // count)
         if name == 's':
             value = round(seconds, 3)
@@ -167,7 +171,7 @@ class Modelisation():
             X_test = scaler.transform(X_test)
             X_train = pd.DataFrame(data=X_train, columns=columns)
             X_test = pd.DataFrame(data=X_test, columns=columns)
-        
+
         t1 = time.time()
         model.fit(X_train, y_train)
         self.training_time = time.time() - t1
@@ -287,24 +291,60 @@ def f_model_name(model):
         return str(model)
 
 
-def SearchCV(model, params, datasets_df=None, data_frac=1, random=False, n_iter=10, csv='data/df_train_prepro.csv', scaling=False, scoring=['f1', 'recall', 'precision'], name='', random_state=None, n_jobs=-1):
+SCORING = {'recall': 'recall',
+           'precision': 'precision',
+           'f1': 'f1',
+           'f3': make_scorer(fbeta_score, beta=3),
+           'f5': make_scorer(fbeta_score, beta=5)
+           }
+
+
+def SearchCV(model, params, **kwargs):
+    # Récupération des arguments
+    columns_quant = kwargs.pop('columns_quant', COLUMNS_QUANT)
+    columns_cat = kwargs.pop('columns_cat', COLUMNS_CAT)
+    drop = kwargs.pop('drop', 'if_binary')
+    data_frac = kwargs.pop('data_frac', 1)
+    scaling = kwargs.pop('scaling', False)
+
+    scoring = kwargs.pop('scoring', SCORING)
+
+    random = kwargs.pop('random', False)
+    if random:
+        n_iter = kwargs.pop('n_iter', 10)
+    random_state = kwargs.pop('random_state', None)
+
+    n_jobs = kwargs.pop('n_jobs', -1)
+    name = kwargs.pop('name', '')
+
+    if len(kwargs) > 0:
+        raise ValueError(f"Arguments non valides : {[*kwargs]}")
+
+    model_name = f_model_name(model)
+    if name:
+        model_name += f'_{name}'
+
     print('RandomizedSearchCV' if random else 'GridSearchCV')
+    print(f"Modèle : {model_name}")
     print('******************')
     print(f"\nNombre total de combinaisons de paramètres : {len(ParameterGrid(params))}")
-    print(f"Pourcentage des données : {data_frac*100}%")
     if random:
         print(f"Nombre de combinaisons aléatoires testées : {n_iter}\n")
+    print(f"Columns_quant : {'default' if columns_quant == COLUMNS_QUANT else columns_quant}")
+    print(f"Columns_cat : {'default' if columns_cat == COLUMNS_CAT else columns_cat}")
+    print(f"drop : {drop}")
+    print(f"Pourcentage des données : {data_frac*100}%")
 
-    if datasets_df is None:
-        df = pd.read_csv(csv).sample(frac=data_frac, random_state=random_state)
-        datasets_df = datasets(df, verbose=False)
+    # Création des datasets
+    csv = 'data/df_train_prepro.csv'
+    df = pd.read_csv(csv).sample(frac=data_frac, random_state=random_state)
+    datasets_df = datasets(df, columns_quant=columns_quant, columns_cat=columns_cat, verbose=False, sparse=True)
 
     if scaling:
-        X = datasets_df['X_scaled']
+        X = datasets_df['X_only_quant_scaled']
     else:
         X = datasets_df['X']
     y = datasets_df['y']
-    
 
     if random:
         search = RandomizedSearchCV(model, params, n_iter=n_iter, scoring=scoring, refit=False, n_jobs=n_jobs, cv=5, random_state=random_state)
@@ -320,18 +360,17 @@ def SearchCV(model, params, datasets_df=None, data_frac=1, random=False, n_iter=
 
     len_grid = len(ParameterGrid(params))
 
-    model_name = f_model_name(model)
-    if name:
-        model_name += f'_{name}'
-
     dico = {'model': str(model),
             'model_name': model_name,
             'type': 'RandomizedSearchCV' if random else 'GridSearchCV',
             'len_grid': len_grid,
-            'n_iter': n_iter,
+            'n_iter': n_iter if random else '',
+            'columns_quant': 'default' if columns_quant == COLUMNS_QUANT else columns_quant,
+            'columns_cat': 'default' if columns_cat == COLUMNS_CAT else columns_cat,
+            'drop': drop,
             'data_frac': data_frac,
-            'temps': temps,
             'n_jobs': n_jobs,
+            'temps': temps,
             'params': params,
             'scoring': scoring
             }
@@ -354,7 +393,7 @@ def SearchCV(model, params, datasets_df=None, data_frac=1, random=False, n_iter=
 
 def restauration_CV(filename, verbose=True):
     dico, results = pickle.load(open('backups/' + filename + '.pkl', 'rb'))
-    
+
     if verbose:
         for key, value in dico.items():
             print(f"{key} : {value}")
@@ -388,23 +427,22 @@ def graph_2scores_CV(dico, results, score1, score2, s=20, zoom=1):
     plt.show()
 
 
-    
 def graph_3scores_CV(dico, results, score1, score2, score3, s=20, zoom=1):
     """
     Zoom sur les x% meilleurs combinaisons selon score1
     """
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection='3d')
-    
+
     if dico['type'] == 'RandomizedSearchCV':
         n = int(zoom * dico['n_iter'])
     else:
         n = int(zoom * dico['len_grid'])
-        
+
     results_sort = results.sort_values(by=f'mean_test_{score1}', ascending=False)
 
     ax.scatter(results_sort[f'mean_test_{score1}'][:n], results_sort[f'mean_test_{score2}'][:n], results_sort[f'mean_test_{score3}'][:n], s=s, color='r', linestyle="None", marker='o')
-    
+
     ax.set_xlabel(score1)
     ax.set_ylabel(score2)
     ax.set_zlabel(score3)
@@ -448,7 +486,7 @@ def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, widt
             nb_param = results[f'param_{param}'].nunique()
             numeric = False
 
-        if nb_param <= 15 or not numeric: # xticks régulier
+        if nb_param <= 15 or not numeric:  # xticks régulier
             r = list(range(nb_param))
             for score in dico['scoring']:
                 a = results.groupby(f'param_{param}').mean()
@@ -461,18 +499,18 @@ def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, widt
             ax.set_xticklabels(a.index)
             if not numeric:
                 ax.tick_params(axis='x', labelrotation=45)
-        else: # Numérique et plus de 15 valeurs
+        else:  # Numérique et plus de 15 valeurs
             for score in dico['scoring']:
                 a = results.groupby(f'param_{param}').mean()
                 a.sort_index(inplace=True, ascending=True)
-                ax.plot(a.index, list(a[f"mean_test_{score}"]), label=score)        
+                ax.plot(a.index, list(a[f"mean_test_{score}"]), label=score)
             if param in xscale:
                 ax.set_xscale(xscale[param])
 
         ax.set_xlabel(param)
         ax.set_ylabel("score")
         ax.legend()
-    
+
     if len(list_param) % ncols != 0:
         if len(list_param) > ncols:
             for i in range(len(list_param) % ncols, ncols):
@@ -485,7 +523,7 @@ def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, widt
     fig.tight_layout()
     plt.show()
 
-    
+
 def key_class_weight(string):
     if string == 'None':
         return -2
@@ -499,10 +537,11 @@ def key_class_weight(string):
 key_class_weight = np.vectorize(key_class_weight)
 
 
-def best_score_CV(dico, results, score):
+def best_score_CV(dico, results, score, display_table=True):
     results_sort = results.sort_values(by=f'mean_test_{score}', ascending=False)
 
-    display(results_sort.head(10))
+    if display_table:
+        display(results_sort.head(10))
 
     best_params = results_sort.iloc[0].params
     print(f"Meilleure combinaison de paramètres pour {score} :")
