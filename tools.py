@@ -87,13 +87,14 @@ def datasets(df, columns_quant=COLUMNS_QUANT, columns_cat=COLUMNS_CAT, verbose=T
         X_cat = X_cat[columns_cat]
 
     X_cat_scaled = (X_cat - X_cat.mean()) / X_cat.std()
+    X_cat_scaled2 = X_cat / X_cat.std()
     if verbose:
         print(f"\nNombre de variables pour X_cat : {len(X_cat.columns)}\n")
         display(X_cat.columns)
 
     X = pd.concat([X_quant, X_cat], axis=1)
     X_all_scaled = pd.concat([X_quant_scaled, X_cat_scaled], axis=1)
-    X_only_quant_scaled = pd.concat([X_quant_scaled, X_cat], axis=1)
+    X_only_quant_scaled = pd.concat([X_quant_scaled, X_cat_scaled2], axis=1)
     if verbose:
         print(f"\nNombre de variables pour X : {len(X.columns)}")
 
