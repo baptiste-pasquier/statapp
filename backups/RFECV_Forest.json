@@ -1,0 +1,15 @@
+{
+  "columns_quant": [
+    "campaignctrlast24h",
+    "contextid",
+    "dayssincelastvisitdouble",
+    "display_size",
+    "nbdayssincelastclick",
+    "nbdisplay_1hour",
+    "nbdisplayglobalapprox_1d_sum_xdevice",
+    "zonecostineuro"
+  ],
+  "columns_cat": [
+    "is_interstitial_True"
+  ]
+}

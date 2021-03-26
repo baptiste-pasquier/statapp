@@ -1,0 +1,15 @@
+{
+  "columns_quant": [
+    "campaignctrlast24h",
+    "contextid",
+    "nbdayssincelastclick",
+    "nbdisplay_1hour",
+    "zonecostineuro"
+  ],
+  "columns_cat": [
+    "device_type_Android",
+    "device_type_Desktop",
+    "device_type_iPad",
+    "is_interstitial_True"
+  ]
+}
