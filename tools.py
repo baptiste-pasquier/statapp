@@ -1,3 +1,4 @@
+import os
 import pickle
 import time
 from math import ceil
@@ -214,8 +215,10 @@ class Modelisation():
     def get_data(self):
         return self.X_train, self.X_test, self.y_train, self.y_test
 
-    def show_conf_matrix(self):
+    def show_conf_matrix(self, pdf=None):
         metrics.plot_confusion_matrix(self.model, self.X_test, self.y_test, cmap='Blues')
+        if pdf:
+            pdf.export()
         plt.show()
 
     def show_metrics_score(self):
@@ -224,13 +227,15 @@ class Modelisation():
         print(f"training time : {display_time(self.training_time)}")
         print(f"prediction time : {display_time(self.prediction_time)}")
 
-    def show_ROC(self):
+    def show_ROC(self, pdf=None):
         fpr, tpr, _ = metrics.roc_curve(self.y_test, self.probs)
         plt.plot(fpr, tpr, label=f"{self.model}")
         plt.plot([0, 1], [0, 1], "r-", label='Modèle aléatoire')
         plt.plot([0, 0, 1], [0, 1, 1], 'b-', label='Modèle parfait')
         plt.legend()
         plt.title('Courbe ROC')
+        if pdf:
+            pdf.export()
         plt.show()
 
     def show_attributes(self):
@@ -406,7 +411,7 @@ def restauration_CV(filename, verbose=True):
     return dico, results
 
 
-def graph_2scores_CV(dico, results, score1, score2, s=20, zoom=1):
+def graph_2scores_CV(dico, results, score1, score2, s=20, zoom=1, pdf=None):
     """
     Zoom sur les x% meilleurs combinaisons selon score1
     """
@@ -426,10 +431,12 @@ def graph_2scores_CV(dico, results, score1, score2, s=20, zoom=1):
         plt.title(f"{dico['model_name']} | RandomizedSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres parmi {dico['len_grid']}, avec {dico['data_frac']*100}% des données")
     else:
         plt.title(f"{dico['model_name']} | GridSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres, avec {dico['data_frac']*100}% des données")
+    if pdf:
+        pdf.export()
     plt.show()
 
 
-def graph_3scores_CV(dico, results, score1, score2, score3, s=20, zoom=1):
+def graph_3scores_CV(dico, results, score1, score2, score3, s=20, zoom=1, pdf=None):
     """
     Zoom sur les x% meilleurs combinaisons selon score1
     """
@@ -452,10 +459,12 @@ def graph_3scores_CV(dico, results, score1, score2, score3, s=20, zoom=1):
         plt.title(f"{dico['model_name']} | RandomizedSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres parmi {dico['len_grid']}, avec {dico['data_frac']*100}% des données")
     else:
         plt.title(f"{dico['model_name']} | GridSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres, avec {dico['data_frac']*100}% des données")
+    if pdf:
+        pdf.export()
     plt.show()
 
 
-def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, width=5):
+def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, width=5, pdf=None):
     """
     xscale = {param1: 'log'}
     """
@@ -523,6 +532,8 @@ def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, widt
 
     fig.suptitle(f"{dico['model_name']} : effet des paramètres", fontsize=14, y=1)
     fig.tight_layout()
+    if pdf:
+        pdf.export()
     plt.show()
 
 
@@ -552,7 +563,7 @@ def best_score_CV(dico, results, score, display_table=True):
     return best_params
 
 
-def graph_2scores_CV_comp(dr_list, score1, score2, s=20, alpha=1, zoom=1):
+def graph_2scores_CV_comp(dr_list, score1, score2, s=20, alpha=1, zoom=1, pdf=None):
     """
     Comparaison de plusieurs modèles
     dr_list : [(dico1, results1), (dico2, results2)]
@@ -580,4 +591,21 @@ def graph_2scores_CV_comp(dr_list, score1, score2, s=20, alpha=1, zoom=1):
     for lh in legend.legendHandles:
         lh.set_alpha(1.0)
         lh.set_sizes([30])
+    if pdf:
+        pdf.export()
     plt.show()
+
+
+class PDF():
+    def __init__(self, fig_folder):
+        self.fig_folder = fig_folder
+        self.fig_count = 0
+        
+        if not os.path.exists(fig_folder):
+            os.makedirs(fig_folder)
+
+    def export(self):
+        file = f"{self.fig_folder}{self.fig_count:02d}.pdf"
+        plt.savefig(file, bbox_inches='tight')
+        print(f"Export PDF : {file}\n")        
+        self.fig_count += 1
