@@ -307,6 +307,7 @@ def SearchCV(model, params, **kwargs):
     drop = kwargs.pop('drop', 'if_binary')
     data_frac = kwargs.pop('data_frac', 1)
     scaling = kwargs.pop('scaling', False)
+    sparse = kwargs.pop('sparse', False)
 
     scoring = kwargs.pop('scoring', SCORING)
 
@@ -339,7 +340,7 @@ def SearchCV(model, params, **kwargs):
     # Création des datasets
     csv = 'data/df_train_prepro.csv'
     df = pd.read_csv(csv).sample(frac=data_frac, random_state=random_state)
-    datasets_df = datasets(df, columns_quant=columns_quant, columns_cat=columns_cat, verbose=False, sparse=True, drop=drop)
+    datasets_df = datasets(df, columns_quant=columns_quant, columns_cat=columns_cat, verbose=False, sparse=sparse, drop=drop)
 
     if scaling:
         X = datasets_df['X_only_quant_scaled']

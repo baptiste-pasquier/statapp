@@ -1,34 +1,42 @@
 {
   "LR": {
-    "C": 0.0038566204211634724,
+    "C": 0.09236708571873865,
     "class_weight": {
       "0": 1,
       "1": 20
     }
   },
   "RandomOver_LR": {
-    "model__C": 0.17433288221999874,
+    "model__C": 2.21221629107045,
     "model__class_weight": {
       "0": 1,
-      "1": 2
+      "1": 6
     },
-    "over__sampling_strategy": 0.6
+    "over__sampling_strategy": 0.2
   },
   "SMOTENC_LR": {
     "over__sampling_strategy": 0.1,
     "over__k_neighbors": 4,
     "model__class_weight": {
       "0": 1,
-      "1": 18
+      "1": 16
     },
-    "model__C": 0.007278953843983146,
+    "model__C": 0.3290344562312671,
     "over__n_jobs": -1
   },
   "LR_RFECV": {
-    "C": 0.007278953843983146,
+    "C": 7.880462815669905,
     "class_weight": {
       "0": 1,
       "1": 20
     }
+  },
+  "RandomOver_LR_RFECV": {
+    "model__C": 0.0020433597178569417,
+    "model__class_weight": {
+      "0": 1,
+      "1": 2
+    },
+    "over__sampling_strategy": 0.6
   }
 }
