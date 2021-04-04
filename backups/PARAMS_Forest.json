@@ -1,1 +1,56 @@
-{"n_estimators": 1500, "min_samples_split": 2, "min_samples_leaf": 4, "max_features": "sqrt", "max_depth": 10, "class_weight": {"0": 1, "1": 32}, "bootstrap": true}
+{
+  "Forest": {
+    "n_estimators": 400,
+    "min_samples_split": 10,
+    "min_samples_leaf": 1,
+    "max_features": "sqrt",
+    "max_depth": 10,
+    "class_weight": {
+      "0": 1,
+      "1": 26
+    },
+    "bootstrap": false,
+    "n_jobs": -1
+  },
+  "RandomOver_Forest": {
+    "over__sampling_strategy": 0.8,
+    "model__n_estimators": 400,
+    "model__min_samples_split": 10,
+    "model__min_samples_leaf": 1,
+    "model__max_features": "sqrt",
+    "model__max_depth": 10,
+    "model__class_weight": {
+      "0": 1,
+      "1": 2
+    },
+    "model__bootstrap": true,
+    "model__n_jobs": -1
+  },
+  "Forest_RFECV": {
+    "n_estimators": 400,
+    "min_samples_split": 10,
+    "min_samples_leaf": 4,
+    "max_features": "sqrt",
+    "max_depth": 10,
+    "class_weight": {
+      "0": 1,
+      "1": 32
+    },
+    "bootstrap": false,
+    "n_jobs": -1
+  },
+  "RandomOver_Forest_RFECV": {
+    "over__sampling_strategy": 1,
+    "model__n_estimators": 400,
+    "model__min_samples_split": 5,
+    "model__min_samples_leaf": 4,
+    "model__max_features": "sqrt",
+    "model__max_depth": 10,
+    "model__class_weight": {
+      "0": 1,
+      "1": 2
+    },
+    "model__bootstrap": true,
+    "model__n_jobs": -1
+  }
+}
