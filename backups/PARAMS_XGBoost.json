@@ -8,6 +8,8 @@
     "learning_rate": 0.2,
     "gamma": 0.5,
     "colsample_bytree": 0.8,
+    "booster": "gbtree",
+    "objective": "binary:logistic",
     "n_jobs": -1
   },
   "RandomOver_XGBoost": {
@@ -20,6 +22,8 @@
     "model__learning_rate": 0.2,
     "model__gamma": 2,
     "model__colsample_bytree": 0.6,
+    "model__booster": "gbtree",
+    "model__objective": "binary:logistic",
     "model__n_jobs": -1
   },
   "XGBoost_RFECV": {
@@ -31,6 +35,8 @@
     "learning_rate": 0.1,
     "gamma": 1.5,
     "colsample_bytree": 0.6,
+    "booster": "gbtree",
+    "objective": "binary:logistic",
     "n_jobs": -1
   },
   "RandomOver_XGBoost_RFECV": {
@@ -43,6 +49,8 @@
     "model__learning_rate": 0.3,
     "model__gamma": 2,
     "model__colsample_bytree": 0.6,
+    "model__booster": "gbtree",
+    "model__objective": "binary:logistic",
     "model__n_jobs": -1
   }
 }
