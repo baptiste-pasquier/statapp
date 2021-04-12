@@ -3,6 +3,7 @@ import pickle
 import time
 from math import ceil
 
+import shutil
 import graphviz
 import matplotlib.pyplot as plt
 import numpy as np
@@ -233,9 +234,9 @@ class Modelisation():
         plt.plot([0, 1], [0, 1], "r-", label='Modèle aléatoire')
         plt.plot([0, 0, 1], [0, 1, 1], 'b-', label='Modèle parfait')
         plt.legend()
-        plt.title('Courbe ROC')
         if pdf:
             pdf.export()
+        plt.title('Courbe ROC')
         plt.show()
 
     def show_attributes(self):
@@ -427,12 +428,12 @@ def graph_2scores_CV(dico, results, score1, score2, s=20, zoom=1, pdf=None):
 
     plt.xlabel(score1)
     plt.ylabel(score2)
+    if pdf:
+        pdf.export()
     if dico['type'] == 'RandomizedSearchCV':
         plt.title(f"{dico['model_name']} | RandomizedSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres parmi {dico['len_grid']}, avec {dico['data_frac']*100}% des données")
     else:
         plt.title(f"{dico['model_name']} | GridSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres, avec {dico['data_frac']*100}% des données")
-    if pdf:
-        pdf.export()
     plt.show()
 
 
@@ -455,12 +456,12 @@ def graph_3scores_CV(dico, results, score1, score2, score3, s=20, zoom=1, pdf=No
     ax.set_xlabel(score1)
     ax.set_ylabel(score2)
     ax.set_zlabel(score3)
+    if pdf:
+        pdf.export()
     if dico['type'] == 'RandomizedSearchCV':
         plt.title(f"{dico['model_name']} | RandomizedSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres parmi {dico['len_grid']}, avec {dico['data_frac']*100}% des données")
     else:
         plt.title(f"{dico['model_name']} | GridSearchCV : {'(zoom) ' if zoom != 1 else ''}scores de {n} combinaisons de paramètres, avec {dico['data_frac']*100}% des données")
-    if pdf:
-        pdf.export()
     plt.show()
 
 
@@ -530,10 +531,11 @@ def graph_param_CV(dico, results, param=None, ncols=3, xscale={}, height=3, widt
             for i in range(len(list_param) % ncols, ncols):
                 axes[i].set_visible(False)
 
-    fig.suptitle(f"{dico['model_name']} : effet des paramètres", fontsize=14, y=1)
     fig.tight_layout()
     if pdf:
         pdf.export()
+    fig.suptitle(f"{dico['model_name']} : effet des paramètres", fontsize=14, y=1)
+    fig.tight_layout()
     plt.show()
 
 
@@ -600,9 +602,9 @@ class PDF():
     def __init__(self, fig_folder):
         self.fig_folder = fig_folder
         self.fig_count = 0
-        
-        if not os.path.exists(fig_folder):
-            os.makedirs(fig_folder)
+
+        shutil.rmtree(fig_folder, ignore_errors=True)
+        os.makedirs(fig_folder)
 
     def export(self):
         file = f"{self.fig_folder}{self.fig_count:02d}.pdf"
