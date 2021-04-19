@@ -52,5 +52,20 @@
     "model__booster": "gbtree",
     "model__objective": "binary:logistic",
     "model__n_jobs": -1
+  },
+  "SMOTENC_XGBoost_RFECV": {
+    "over__sampling_strategy": 0.1,
+    "model__subsample": 0.6,
+    "model__scale_pos_weight": 16.5,
+    "model__n_estimators": 100,
+    "model__min_child_weight": 5,
+    "model__max_depth": 2,
+    "model__learning_rate": 0.1,
+    "model__gamma": 1.5,
+    "model__colsample_bytree": 0.6,
+    "over__n_jobs": -1,
+    "model__booster": "gbtree",
+    "model__objective": "binary:logistic",
+    "model__n_jobs": -1
   }
 }
