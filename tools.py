@@ -18,7 +18,7 @@ from scipy.sparse import csr_matrix
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, fbeta_score, make_scorer
+from sklearn.metrics import confusion_matrix, fbeta_score, make_scorer, ConfusionMatrixDisplay
 from sklearn.model_selection import (GridSearchCV, ParameterGrid,
                                      RandomizedSearchCV, train_test_split)
 from sklearn.preprocessing import OneHotEncoder
@@ -151,7 +151,7 @@ def display_time(seconds, granularity=5):
 # ---------------------------------------------------------------------------- #
 
 class Modelisation():
-    def __init__(self, X, y, model, X_test=None, y_test=None):
+    def __init__(self, X, y, model, X_test=None, y_test=None, seuil=None):
         """
         Par défaut : division du dataset (X, y) en un training set et un test set, sauf si (X_test, y_test) est fourni.
         """
@@ -179,7 +179,10 @@ class Modelisation():
         model.fit(X_train, y_train)
         self.training_time = time.time() - t1
         t1 = time.time()
-        y_pred = model.predict(X_test)
+        if seuil is None:
+            y_pred = model.predict(X_test)
+        else:
+            y_pred = (model.predict_proba(X_test)[:,1] >= seuil).astype(bool)
         self.prediction_time = time.time() - t1
 
         cm = confusion_matrix(y_test, y_pred)
@@ -212,12 +215,20 @@ class Modelisation():
         self.metrics_score = metrics_score
         self.recall = Recall
         self.X_columns = X.columns
+        self.seuil = seuil
 
     def get_data(self):
         return self.X_train, self.X_test, self.y_train, self.y_test
 
     def show_conf_matrix(self, pdf=None):
-        metrics.plot_confusion_matrix(self.model, self.X_test, self.y_test, cmap='Blues')
+        if self.seuil is None:
+            y_pred = self.model.predict(self.X_test)
+        else:
+            y_pred = (self.model.predict_proba(self.X_test)[:,1] >= self.seuil).astype(bool)
+        cm = confusion_matrix(self.y_test, y_pred, labels=self.model.classes_)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm,
+                                      display_labels=self.model.classes_)
+        disp.plot(cmap='Blues') 
         if pdf:
             pdf.export()
         plt.show()
