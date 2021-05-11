@@ -1,10 +1,6 @@
 # statapp
 
-
-## Table des matières
-* [A. Installation](#A-Installation)
-
-## A. Installation
+## Installation
 
 * Installation de l'environnement d'exécution avec Anaconda
 
