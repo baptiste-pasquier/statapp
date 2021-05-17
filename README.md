@@ -1,8 +1,16 @@
 # statapp
 
+Construction d’un modèle de prédiction de clic sur des publicités en ligne avec contraintes sur la quantité de données et le temps d’évaluation.
+
+[Note de synthèse](Synthèse.pdf)
+
+[Rapport](Rapport.pdf)
+
+-----------------
+
 ## Installation
 
-* Installation de l'environnement d'exécution avec Anaconda
+* Installation de l'environnement Anaconda
 
 Cloner le répertoire puis exécuter à l'intérieur du répertoire : 
 ```bash
@@ -28,3 +36,7 @@ ou :
 conda activate statapp
 jupyter notebook
 ```
+
+-----------------
+
+2020-2021
