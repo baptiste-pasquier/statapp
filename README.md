@@ -1,5 +1,7 @@
 # statapp
 
+[![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/baptiste-pasquier/statapp/tree/master/)
+
 Construction d’un modèle de prédiction de clic sur des publicités en ligne avec contraintes sur la quantité de données et le temps d’évaluation.
 
 [Note de synthèse](Synthèse.pdf)
